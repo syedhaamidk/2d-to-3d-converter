@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced 3D Converter Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function App() {
+            const [activeMode, setActiveMode] = useState('heightmap');
+            const [file, setFile] = useState(null);
+            const [preview, setPreview] = useState(null);
+            const [result, setResult] = useState(null);
+            const [processing, setProcessing] = useState(false);
+
+            const modes = [
+                {
+                    id: 'heightmap',
+                    name: 'Height Map',
+                    icon: '🗻',
+                    description: 'Convert images to 3D relief based on brightness',
+                    color: 'bg-blue-500'
+                },
+                {
+                    id: 'topo',
+                    name: 'Topographic Map',
+                    icon: '🗺️',
+                    description: 'Generate terrain models from GPS/elevation data',
+                    color: 'bg-green-500'
+                },
+                {
+                    id: 'braille',
+                    name: 'Braille Text',
+                    icon: '⠃',
+                    description: 'Create tactile Braille models for accessibility',
+                    color: 'bg-purple-500'
+                },
+                {
+                    id: 'qr',
+                    name: 'QR Code',
+                    icon: '📱',
+                    description: 'Generate 3D QR codes and stamps',
+                    color: 'bg-pink-500'
+                },
+                {
+                    id: 'depth',
+                    name: 'AI Depth',
+                    icon: '🤖',
+                    description: 'Use AI to estimate depth from single images',
+                    color: 'bg-indigo-500'
+                },
+                {
+                    id: 'multi',
+                    name: 'Multi-Material',
+                    icon: '🎨',
+                    description: 'Split into multiple materials for dual extrusion',
+                    color: 'bg-red-500'
+                }
+            ];
+
+            const handleFileChange = (e) => {
+                const selectedFile = e.target.files[0];
+                if (selectedFile) {
+                    setFile(selectedFile);
+                    const reader = new FileReader();
+                    reader.onload = (e) => setPreview(e.target.result);
+                    reader.readAsDataURL(selectedFile);
+                }
+            };
+
+            const simulateConversion = () => {
+                setProcessing(true);
+                setResult(null);
+
+                // Simulate API call
+                setTimeout(() => {
+                    const results = {
+                        heightmap: {
+                            success: true,
+                            file: 'model.stl',
+                            dimensions: '99mm × 99mm × 12mm',
+                            vertices: '20,000',
+                            faces: '39,996',
+                            downloadUrl: '#'
+                        },
+                        topo: {
+                            success: true,
+                            file: 'terrain.stl',
+                            points: '10,000',
+                            elevationRange: '0m to 2847m',
+                            downloadUrl: '#'
+                        },
+                        braille: {
+                            success: true,
+                            file: 'braille.stl',
+                            text: 'Sample Text',
+                            dimensions: '207.5mm × 45.0mm',
+                            downloadUrl: '#'
+                        },
+                        qr: {
+                            success: true,
+                            file: 'qr_code.stl',
+                            data: 'https://example.com',
+                            mode: 'stamp',
+                            dimensions: '100mm × 100mm',
+                            downloadUrl: '#'
+                        },
+                        depth: {
+                            success: true,
+                            file: 'depth_model.stl',
+                            method: 'AI depth estimation',
+                            dimensions: '256mm × 256mm × 17mm',
+                            downloadUrl: '#'
+                        },
+                        multi: {
+                            success: true,
+                            files: ['material_1.stl', 'material_2.stl'],
+                            materials: 2,
+                            downloadUrl: '#'
+                        }
+                    };
+
+                    setResult(results[activeMode]);
+                    setProcessing(false);
+                }, 2000);
+            };
+
+            return (
+                <div className="min-h-screen">
+                    {/* Header */}
+                    <div className="gradient-bg text-white py-12">
+                        <div className="container mx-auto px-4">
+                            <h1 className="text-5xl font-bold mb-4">🚀 Advanced 3D Converter</h1>
+                            <p className="text-xl opacity-90">Transform images into 3D printable models with AI-powered tools</p>
+                        </div>
+                    </div>
+
+                    {/* Mode Selection */}
+                    <div className="container mx-auto px-4 -mt-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                            {modes.map(mode => (
+                                <div
+                                    key={mode.id}
+                                    onClick={() => setActiveMode(mode.id)}
+                                    className={`feature-card bg-white rounded-xl p-6 cursor-pointer border-2 ${
+                                        activeMode === mode.id ? 'border-purple-500 shadow-lg' : 'border-transparent'
+                                    }`}
+                                >
+                                    <div className="flex items-start gap-4">
+                                        <div className={`${mode.color} text-white text-3xl p-3 rounded-lg`}>
+                                            {mode.icon}
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="text-lg font-bold mb-1">{mode.name}</h3>
+                                            <p className="text-sm text-gray-600">{mode.description}</p>
+                                        </div>
+                                        {activeMode === mode.id && (
+                                            <div className="text-purple-500">✓</div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Main Conversion Area */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                            {/* Input Section */}
+                            <div className="bg-white rounded-xl p-8 shadow-lg">
+                                <h2 className="text-2xl font-bold mb-6">Input</h2>
+                                
+                                {['heightmap', 'depth', 'multi'].includes(activeMode) && (
+                                    <div>
+                                        <label className="block mb-4">
+                                            <span className="text-gray-700 font-medium">Upload Image</span>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleFileChange}
+                                                className="mt-2 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                                            />
+                                        </label>
+                                        {preview && (
+                                            <div className="mt-4">
+                                                <img src={preview} alt="Preview" className="rounded-lg max-h-64 w-full object-contain bg-gray-100" />
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {activeMode === 'braille' && (
+                                    <div>
+                                        <label className="block mb-4">
+                                            <span className="text-gray-700 font-medium">Enter Text</span>
+                                            <textarea
+                                                className="mt-2 block w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none"
+                                                rows="4"
+                                                placeholder="Type your text here..."
+                                            ></textarea>
+                                        </label>
+                                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
+                                            <strong>ℹ️ Braille Standards:</strong> Uses 6-dot Braille patterns for tactile reading
+                                        </div>
+                                    </div>
+                                )}
+
+                                {activeMode === 'qr' && (
+                                    <div>
+                                        <label className="block mb-4">
+                                            <span className="text-gray-700 font-medium">QR Code Data</span>
+                                            <input
+                                                type="text"
+                                                className="mt-2 block w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none"
+                                                placeholder="https://example.com"
+                                            />
+                                        </label>
+                                        <label className="flex items-center gap-2 mb-4">
+                                            <input type="checkbox" className="w-4 h-4 text-purple-600" />
+                                            <span className="text-sm">Invert for stamp mode</span>
+                                        </label>
+                                    </div>
+                                )}
+
+                                {activeMode === 'topo' && (
+                                    <div>
+                                        <div className="space-y-4">
+                                            <button className="w-full bg-green-500 text-white py-3 px-6 rounded-lg hover:bg-green-600 transition">
+                                                📍 Import GPS Data (CSV)
+                                            </button>
+                                            <button className="w-full bg-blue-500 text-white py-3 px-6 rounded-lg hover:bg-blue-600 transition">
+                                                🌍 Use Demo Terrain
+                                            </button>
+                                        </div>
+                                        <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-4 text-sm">
+                                            <strong>CSV Format:</strong> latitude, longitude, elevation
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Settings */}
+                                <div className="mt-6 pt-6 border-t">
+                                    <h3 className="font-bold mb-4">Settings</h3>
+                                    <div className="space-y-3">
+                                        <label className="block">
+                                            <span className="text-sm text-gray-700">Max Height (mm)</span>
+                                            <input type="number" defaultValue="10" className="mt-1 block w-full px-3 py-2 rounded border border-gray-300" />
+                                        </label>
+                                        <label className="block">
+                                            <span className="text-sm text-gray-700">Base Thickness (mm)</span>
+                                            <input type="number" defaultValue="2" className="mt-1 block w-full px-3 py-2 rounded border border-gray-300" />
+                                        </label>
+                                        <label className="block">
+                                            <span className="text-sm text-gray-700">Resolution</span>
+                                            <select className="mt-1 block w-full px-3 py-2 rounded border border-gray-300">
+                                                <option>Low (50×50)</option>
+                                                <option selected>Medium (100×100)</option>
+                                                <option>High (200×200)</option>
+                                            </select>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={simulateConversion}
+                                    disabled={processing}
+                                    className="mt-6 w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-4 px-6 rounded-lg hover:from-purple-700 hover:to-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {processing ? (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+                                            Converting...
+                                        </span>
+                                    ) : (
+                                        '🚀 Convert to 3D'
+                                    )}
+                                </button>
+                            </div>
+
+                            {/* Output Section */}
+                            <div className="bg-white rounded-xl p-8 shadow-lg">
+                                <h2 className="text-2xl font-bold mb-6">Output</h2>
+                                
+                                {!result && !processing && (
+                                    <div className="text-center py-16 text-gray-400">
+                                        <div className="text-6xl mb-4">📦</div>
+                                        <p>Your 3D model will appear here</p>
+                                    </div>
+                                )}
+
+                                {processing && (
+                                    <div className="text-center py-16">
+                                        <div className="animate-pulse space-y-4">
+                                            <div className="text-6xl">⚙️</div>
+                                            <p className="text-gray-600">Generating 3D mesh...</p>
+                                            <div className="max-w-xs mx-auto bg-gray-200 rounded-full h-2">
+                                                <div className="bg-purple-600 h-2 rounded-full" style={{width: '70%', transition: 'width 2s'}}></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {result && result.success && (
+                                    <div className="space-y-6">
+                                        <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6">
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <div className="text-3xl">✅</div>
+                                                <div>
+                                                    <h3 className="font-bold text-lg">Conversion Successful!</h3>
+                                                    <p className="text-sm text-gray-600">Your model is ready for 3D printing</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-2 text-sm">
+                                                {result.file && <p><strong>File:</strong> {result.file}</p>}
+                                                {result.dimensions && <p><strong>Dimensions:</strong> {result.dimensions}</p>}
+                                                {result.vertices && <p><strong>Vertices:</strong> {result.vertices}</p>}
+                                                {result.faces && <p><strong>Faces:</strong> {result.faces}</p>}
+                                                {result.text && <p><strong>Text:</strong> {result.text}</p>}
+                                                {result.data && <p><strong>QR Data:</strong> {result.data}</p>}
+                                                {result.method && <p><strong>Method:</strong> {result.method}</p>}
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <button className="bg-purple-600 text-white py-3 px-6 rounded-lg hover:bg-purple-700 transition">
+                                                ⬇️ Download STL
+                                            </button>
+                                            <button className="bg-gray-200 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-300 transition">
+                                                👁️ Preview 3D
+                                            </button>
+                                        </div>
+
+                                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                            <h4 className="font-bold mb-2">💡 Next Steps:</h4>
+                                            <ol className="text-sm space-y-1 list-decimal list-inside">
+                                                <li>Download the STL file</li>
+                                                <li>Open in slicer software (Cura, PrusaSlicer)</li>
+                                                <li>Configure print settings</li>
+                                                <li>Send to your 3D printer</li>
+                                            </ol>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Features Comparison */}
+                        <div className="bg-white rounded-xl p-8 shadow-lg mb-12">
+                            <h2 className="text-2xl font-bold mb-6">Feature Comparison</h2>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="border-b">
+                                            <th className="text-left py-3 px-4">Feature</th>
+                                            <th className="text-center py-3 px-4">Best For</th>
+                                            <th className="text-center py-3 px-4">Complexity</th>
+                                            <th className="text-center py-3 px-4">Quality</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr className="border-b">
+                                            <td className="py-3 px-4 font-medium">Height Map</td>
+                                            <td className="text-center py-3 px-4">Photos, Art</td>
+                                            <td className="text-center py-3 px-4">⭐⭐</td>
+                                            <td className="text-center py-3 px-4">⭐⭐⭐</td>
+                                        </tr>
+                                        <tr className="border-b">
+                                            <td className="py-3 px-4 font-medium">Topographic</td>
+                                            <td className="text-center py-3 px-4">Maps, Terrain</td>
+                                            <td className="text-center py-3 px-4">⭐⭐⭐</td>
+                                            <td className="text-center py-3 px-4">⭐⭐⭐⭐⭐</td>
+                                        </tr>
+                                        <tr className="border-b">
+                                            <td className="py-3 px-4 font-medium">Braille</td>
+                                            <td className="text-center py-3 px-4">Accessibility</td>
+                                            <td className="text-center py-3 px-4">⭐</td>
+                                            <td className="text-center py-3 px-4">⭐⭐⭐⭐⭐</td>
+                                        </tr>
+                                        <tr className="border-b">
+                                            <td className="py-3 px-4 font-medium">QR Code</td>
+                                            <td className="text-center py-3 px-4">Stamps, Labels</td>
+                                            <td className="text-center py-3 px-4">⭐</td>
+                                            <td className="text-center py-3 px-4">⭐⭐⭐⭐</td>
+                                        </tr>
+                                        <tr className="border-b">
+                                            <td className="py-3 px-4 font-medium">AI Depth</td>
+                                            <td className="text-center py-3 px-4">Realistic 3D</td>
+                                            <td className="text-center py-3 px-4">⭐⭐⭐⭐</td>
+                                            <td className="text-center py-3 px-4">⭐⭐⭐⭐</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="py-3 px-4 font-medium">Multi-Material</td>
+                                            <td className="text-center py-3 px-4">Dual Color</td>
+                                            <td className="text-center py-3 px-4">⭐⭐⭐</td>
+                                            <td className="text-center py-3 px-4">⭐⭐⭐⭐</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Footer */}
+                    <footer className="bg-gray-800 text-white py-8 mt-12">
+                        <div className="container mx-auto px-4 text-center">
+                            <p className="mb-2">🚀 Advanced 3D Converter Platform</p>
+                            <p className="text-sm text-gray-400">Transforming 2D into 3D • Built with Python & React</p>
+                        </div>
+                    </footer>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</body>
+</html>
